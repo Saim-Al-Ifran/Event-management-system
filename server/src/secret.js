@@ -1,6 +1,12 @@
 require('dotenv').config();
-const nodeEnv = process.env.NODE_PRODUCTION;
+
+const mongoDbUrl= process.env.MONGODB_URL;
+const nodeEnv   = process.env.NODE_PRODUCTION;
+const secretKey = process.env.JWT_SECRET_KEY;
+
 
 module.exports = {
-    nodeEnv
+    nodeEnv,
+    secretKey,
+    mongoDbUrl
 }

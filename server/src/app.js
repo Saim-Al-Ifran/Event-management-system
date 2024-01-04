@@ -6,7 +6,7 @@ const cors =require('cors');
 const { nodeEnv } = require('./secret');
 const compression = require('compression');
 const cookieParser = require('cookie-parser');
-
+const router = require('./routes/index');
 
 // Middlewares //
 app.use(cookieParser());
@@ -19,16 +19,17 @@ if(nodeEnv !== 'production'){
 app.use(xssClean());
 app.use(cors());
 app.use(compression());
+app.use(router);
 
 // Default middleware for handling errors
 app.use((err, _req, res, _next) => {
-       const message = err.message || 'Server Error Occurred';
-       const status = err.status || 500;
-       res.status(status).json({
-         message,
-         status,
-       });
-     });
-     
+  const message = err.message || 'Server Error Occurred';
+  const status = err.status || 500;  // Ensure status is set, default to 500
+  res.status(status).json({
+    message,
+    status,
+  });
+});
+
 
 module.exports = app;
