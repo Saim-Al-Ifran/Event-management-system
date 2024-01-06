@@ -9,7 +9,8 @@ const {
     getSuperAdminProfile,
     updateSuperAdminProfile,
     resetSuperAdminPassword,
-    updateSuperAdminProfileImage
+    updateSuperAdminProfileImage,
+    getSuperAdminProfileImage
  } = require('../../controllers/user/userController');
  
 const { authenticate } = require('../../middlewares/auth/authenticate');
@@ -28,6 +29,8 @@ router.get('/profile', authenticate , authorizeSuperAdmin , getSuperAdminProfile
 router.put('/profile', authenticate , authorizeSuperAdmin ,  updateSuperAdminProfile);
 router.put('/reset-password', authenticate, authorizeSuperAdmin, resetSuperAdminPassword);  
 router.patch('/upload-profile-image', authenticate, authorizeSuperAdmin , upload.single('image') , updateSuperAdminProfileImage);  
+router.get('/upload-profile-image', authenticate , authorizeSuperAdmin , getSuperAdminProfileImage);  
+
 
 
 

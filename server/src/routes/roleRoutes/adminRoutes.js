@@ -10,8 +10,13 @@ const {
     adminBlockUnblockUser,
     getAdminProfile,
     updateAdminProfile,
-    resetAdminPassword
+    resetAdminPassword,
+    updateAdminProfileImage,
+    getAdminProfileImage,
+    
 } = require('../../controllers/user/userController');
+
+const upload = require('../../middlewares/upload');
 
 
 router.get('/users', authenticate, authorizeAdmin, adminGetAllUsers);
@@ -23,5 +28,6 @@ router.patch('/users/:userId/blockunblock',  authenticate , authorizeAdmin, admi
 router.get('/profile', authenticate, authorizeAdmin, getAdminProfile);
 router.put('/profile', authenticate, authorizeAdmin, updateAdminProfile);
 router.put('/reset-password', authenticate, authorizeAdmin, resetAdminPassword); 
- 
+router.patch('/upload-profile-image', authenticate , authorizeAdmin , upload.single('image') , updateAdminProfileImage);
+router.get('/upload-profile-image', authenticate ,  authorizeAdmin , getAdminProfileImage);  
 module.exports = router;
