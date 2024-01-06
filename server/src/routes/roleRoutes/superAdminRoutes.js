@@ -8,11 +8,13 @@ const {
     superAdminDelete,
     getSuperAdminProfile,
     updateSuperAdminProfile,
-    resetSuperAdminPassword
+    resetSuperAdminPassword,
+    updateSuperAdminProfileImage
  } = require('../../controllers/user/userController');
  
 const { authenticate } = require('../../middlewares/auth/authenticate');
 const authorizeSuperAdmin = require('../../middlewares/auth/authorizeSuperAdmin');
+const upload = require('../../middlewares/upload');
 
 const router = require('express').Router();
    
@@ -25,7 +27,8 @@ router.delete('/entities/:entityId', authenticate, authorizeSuperAdmin, superAdm
 router.get('/profile', authenticate , authorizeSuperAdmin , getSuperAdminProfile);
 router.put('/profile', authenticate , authorizeSuperAdmin ,  updateSuperAdminProfile);
 router.put('/reset-password', authenticate, authorizeSuperAdmin, resetSuperAdminPassword);  
+router.patch('/upload-profile-image', authenticate, authorizeSuperAdmin , upload.single('image') , updateSuperAdminProfileImage);  
 
- 
+
 
 module.exports = router;

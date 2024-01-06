@@ -4,150 +4,152 @@ const User = require("../../models/User");
 const bcrypt = require('bcrypt');
 const { checkUserRole } = require("../../utils/user/checkUserRole");
 const resetPassword = require("../../utils/user/resetPassword");
+const cloudinary = require('../../config/cloudinary');
+const {Buffer} = require('buffer');
 
- const getAllEntities= async(_req,res,next)=>{
-              try {
-                     const entity = await User.find({});
-                     res.status(200).json({users:entity});
-              } catch (err) {
-                     next(new CustomError(err.message,500));
-              }
- }
-
- const getSingleEntity = async(req,res,next)=>{
-            const {entityId} = req.params;
-            try {
-                   const entity = await User.findById(entityId);
-                   if (!entity) {
-                   
-                    return next(new CustomError('User not found', 404));
-                }
-                   res.status(200).json({user:entity})
-            } catch (err) {
-                 next(new CustomError(err.message,500));
-            }
- }
-
- const updateSingleEntity= async(req,res,next)=>{
-             const {entityId} = req.params;
-             const updatedData  = req.body;
-           
-             try {
-                     if (updatedData.password) {
-                            const hashedPassword = await bcrypt.hash(updatedData.password, 10);
-                            updatedData.password = hashedPassword;
-                     }
-
-                    const entity = await User.findByIdAndUpdate(entityId,updatedData,{ new : true })
-                                              .select("-password");
-                    if(!entity){
-                          return next(new CustomError('User not found',404));
+        const getAllEntities= async(_req,res,next)=>{
+                    try {
+                            const entity = await User.find({});
+                            res.status(200).json({users:entity});
+                    } catch (err) {
+                            next(new CustomError(err.message,500));
                     }
-                    res.status(200).json({message:'User updated sucessfully',user:entity});
-             } catch (err) {
-                   next(new CustomError(err.message,500));
-             }
- }
+        }
 
- const superAdminBlockUnblock = async(req,res,next)=>{
-       
-             const {entityId} = req.params;
-             const {block} = req.body;
-
-             try {
-                    const entity = await User.findById(entityId);
-                    if(!entity){
-                          return next(new CustomError('User not found',404));
+        const getSingleEntity = async(req,res,next)=>{
+                    const {entityId} = req.params;
+                    try {
+                        const entity = await User.findById(entityId);
+                        if (!entity) {
+                        
+                            return next(new CustomError('User not found', 404));
+                        }
+                        res.status(200).json({user:entity})
+                    } catch (err) {
+                        next(new CustomError(err.message,500));
                     }
-                    if(entity.isBlocked && block){
-                            return next(new CustomError('User is already blocked',400));
+        }
+
+          const updateSingleEntity= async(req,res,next)=>{
+                    const {entityId} = req.params;
+                    const updatedData  = req.body;
+                
+                    try {
+                            if (updatedData.password) {
+                                    const hashedPassword = await bcrypt.hash(updatedData.password, 10);
+                                    updatedData.password = hashedPassword;
+                            }
+
+                            const entity = await User.findByIdAndUpdate(entityId,updatedData,{ new : true })
+                                                    .select("-password");
+                            if(!entity){
+                                return next(new CustomError('User not found',404));
+                            }
+                            res.status(200).json({message:'User updated sucessfully',user:entity});
+                    } catch (err) {
+                        next(new CustomError(err.message,500));
                     }
-                    if(!entity.isBlocked && !block){
-                            return next(new CustomError('User is already unblocked',400));
-                    }
-                    entity.isBlocked = block;
-                    await entity.save();
+          }
 
-                    res.status(200).json({message:`User  ${block ? 'blocked' : 'unblocked'} successfully`});
-            
-                    
-             } catch (err) {
-                    next(new CustomError(err.message,500));
-             }
- }
+          const superAdminBlockUnblock = async(req,res,next)=>{
+                
+                        const {entityId} = req.params;
+                        const {block} = req.body;
 
- const superAdminDelete = async (req, res, next) => {
+                        try {
+                                const entity = await User.findById(entityId);
+                                if(!entity){
+                                    return next(new CustomError('User not found',404));
+                                }
+                                if(entity.isBlocked && block){
+                                        return next(new CustomError('User is already blocked',400));
+                                }
+                                if(!entity.isBlocked && !block){
+                                        return next(new CustomError('User is already unblocked',400));
+                                }
+                                entity.isBlocked = block;
+                                await entity.save();
 
-       const { entityId } = req.params;
-       try {
-     
-           const entity = await User.findById(entityId);
-   
-           if (!entity) {
-               return res.status(404).json({ error: 'Use not found' });
+                                res.status(200).json({message:`User  ${block ? 'blocked' : 'unblocked'} successfully`});
+                        
+                                
+                        } catch (err) {
+                                next(new CustomError(err.message,500));
+                        }
            }
- 
-           await User.deleteOne({ _id: entityId });
-           
-           res.status(200).json({ message: 'User deleted successfully', deletedUser: entity });
 
-       } catch (err) {
-           next(new CustomError(err.message, 500));
-       }
-   };
+          const superAdminDelete = async (req, res, next) => {
 
- const getSuperAdminProfile = async(req,res,next)=>{
+                const { entityId } = req.params;
+                try {
+                
+                    const entity = await User.findById(entityId);
+            
+                    if (!entity) {
+                        return res.status(404).json({ error: 'Use not found' });
+                    }
+            
+                    await User.deleteOne({ _id: entityId });
+                    
+                    res.status(200).json({ message: 'User deleted successfully', deletedUser: entity });
 
-       try {
-            const superAdminId = req.user.id;  
-            const superAdmin = await User.findById(superAdminId);
-            if(!superAdmin){
-                  return next(new CustomError('Super-admin not found',404));
-            }
-            res.status(200).json({profile:superAdmin});
-       } catch (err) {
-            next(new CustomError(err.message,500));  
-       }
+                } catch (err) {
+                    next(new CustomError(err.message, 500));
+                }
+          };
 
- }  
+          const getSuperAdminProfile = async(req,res,next)=>{
+
+                try {
+                        const superAdminId = req.user.id;  
+                        const superAdmin = await User.findById(superAdminId);
+                        if(!superAdmin){
+                            return next(new CustomError('Super-admin not found',404));
+                        }
+                        res.status(200).json({profile:superAdmin});
+                } catch (err) {
+                        next(new CustomError(err.message,500));  
+                }
+
+           }  
    
   
  
 
-const updateSuperAdminProfile = async (req, res, next) => {
-       try {
-           const superAdminId = req.user.id; 
-           const updatedData= req.body;
-           const superAdmin = await User.findByIdAndUpdate(superAdminId,updatedData,{ new : true })
-                                        .select("-password");
-           
-           res.status(200).json({ message: 'Profile data updated successfully', updatedProfile: superAdmin });
-       } catch (err) {
-           next(new CustomError(err.message, 500));
-       }
-   };
+          const updateSuperAdminProfile = async (req, res, next) => {
+            try {
+                const superAdminId = req.user.id; 
+                const updatedData= req.body;
+                const superAdmin = await User.findByIdAndUpdate(superAdminId,updatedData,{ new : true })
+                                                .select("-password");
+                
+                res.status(200).json({ message: 'Profile data updated successfully', updatedProfile: superAdmin });
+            } catch (err) {
+                next(new CustomError(err.message, 500));
+            }
+          };
    
  
-const resetSuperAdminPassword = async(req,res,next)=>{
+          const resetSuperAdminPassword = async(req,res,next)=>{
 
-        try {
-              await resetPassword(req,res,next,'super-admin')
-        } catch (err) {
-               next(new CustomError(err.message,500));
-        }  
-}
+                try {
+                    await resetPassword(req,res,next,'super-admin')
+                } catch (err) {
+                    next(new CustomError(err.message,500));
+                }  
+          }
 
-      const resetAdminPassword = async(req,res,next)=>{
+          const resetAdminPassword = async(req,res,next)=>{
             try {
                await resetPassword(req,res,next,'admin');
             } catch (err) {
                 next(new CustomError(err.message,500));
             }
              
-      }
+          }
    
 
-       const adminGetSingleUser = async(req,res,next)=>{
+          const adminGetSingleUser = async(req,res,next)=>{
               try {
                      const { userId } = req.params;
                      const user = await User.findById(userId);
@@ -164,9 +166,9 @@ const resetSuperAdminPassword = async(req,res,next)=>{
               } catch (err) {
                      next(new CustomError(err.message, err.status));
               }
-       }
+          }
 
-       const adminGetAllUsers = async (_req, res, next) => {
+          const adminGetAllUsers = async (_req, res, next) => {
 
               try {
 
@@ -178,9 +180,9 @@ const resetSuperAdminPassword = async(req,res,next)=>{
                   next(new CustomError(err.message, 500));
               }
        
-       };
+          };
 
-       const adminCreateUser = async (req, res, next) => {
+          const adminCreateUser = async (req, res, next) => {
               try {
                      const { username, email, password } = req.body;
 
@@ -192,9 +194,9 @@ const resetSuperAdminPassword = async(req,res,next)=>{
               } catch (err) {
                      next(new CustomError(err.message, 500));
               }
-       };
+          };
 
-       const adminUpdateUser = async (req, res, next) => {
+          const adminUpdateUser = async (req, res, next) => {
               try {
                   const { userId } = req.params;
                   const { username , phoneNumber , email , password } = req.body;
@@ -344,7 +346,39 @@ const resetSuperAdminPassword = async(req,res,next)=>{
                 next(new CustomError(err.message, 500));
             }
         };
-       
+
+        const updateSuperAdminProfileImage = async (req, res, next) => {
+            try {
+                if (!req.file) {
+                    return res.status(400).json({ error: 'No file uploaded' });
+                }
+        
+                const b64 = Buffer.from(req.file.buffer).toString('base64');
+                const dataURI = 'data:' + req.file.mimetype + ';base64,' + b64;
+        
+                const result = await cloudinary.uploader.upload(dataURI, {
+                    folder: 'event_management/uploads',
+                    public_id: req.file.originalname,
+                });
+        
+                // Find the existing super admin user and update the image field
+                const superAdmin = await User.findById(req.user.id);
+                if (!superAdmin) {
+                    return res.status(404).json({ error: 'Super Admin not found' });
+                }
+        
+                superAdmin.image = result.secure_url;
+                await superAdmin.save();
+        
+                res.status(200).json({ message: 'Profile image updated successfully' });
+            } catch (err) {
+                
+                next(new CustomError(err.message, 500));
+            }
+        };
+        
+    
+         
  
 
  module.exports = {
@@ -365,7 +399,8 @@ const resetSuperAdminPassword = async(req,res,next)=>{
     adminBlockUnblockUser,
     getAdminProfile,
     updateAdminProfile,
-    resetAdminPassword
+    resetAdminPassword,
+    updateSuperAdminProfileImage
 
  }
 
