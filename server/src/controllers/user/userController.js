@@ -6,7 +6,7 @@ const { checkUserRole } = require("../../utils/user/checkUserRole");
 const resetPassword = require("../../utils/user/resetPassword");
 const {findUserAndCheckImage} = require('../../utils/findUserAndCheckImage');
 
-const uploadImageToCloudinary = require("../../utils/imageUploadCloudinary");
+const {uploadImageToCloudinary} = require("../../utils/imageUploadCloudinary");
 
         const getAllEntities= async(_req,res,next)=>{
                     try {
