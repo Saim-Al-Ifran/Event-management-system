@@ -2,13 +2,21 @@ const { body } = require("express-validator")
 
 
 
-const validateRegistration = [
-    body('username')
+const validateUserData = [
+  body('username')
     .trim()
     .notEmpty()
     .withMessage('Name is required')
     .isLength({ min: 3, max: 31 })
     .withMessage('Name should be at least 3-31 characters long'),
+  body('phoneNumber')
+    .trim()
+    .notEmpty()
+    .withMessage('Phone number is required')
+    .isMobilePhone()
+    .withMessage('Invalid phone number')
+    .isLength({ min: 11, max: 11 })
+    .withMessage('Phone number should be exactly 11 characters long'),
   body('email')
     .trim()
     .notEmpty()
@@ -41,6 +49,6 @@ const validateLogin = [
 
 
 module.exports = {
-    validateRegistration,
-    validateRegistration
+    validateUserData,
+    validateLogin
 }

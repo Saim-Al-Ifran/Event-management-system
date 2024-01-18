@@ -8,7 +8,6 @@ const deleteImageFromCloudinary = async (cloudinaryURL) => {
 
       if (match && match[1]) {
           const publicId = match[1];
-          //console.log(publicId);
           const result = await cloudinary.uploader.destroy(publicId);
           return result;
       } else {
