@@ -41,6 +41,7 @@ const createCategory = async(req,res,next)=>{
 }
 
 const updateCategory = async(req,res,next)=>{
+
     try {
         const { categoryId } = req.params;
         const { name, description } = req.body;
@@ -66,6 +67,7 @@ const updateCategory = async(req,res,next)=>{
         await existingCategory.save();
 
         res.status(200).json({ message: 'Category updated successfully', category: existingCategory });
+        
     } catch (err) {
  
             next(new CustomError(err.message, 500));
@@ -74,6 +76,7 @@ const updateCategory = async(req,res,next)=>{
 }
  
 const deleteCategory = async (req, res, next) => {
+
     try {
         const { categoryId } = req.params;
 
@@ -96,6 +99,7 @@ const deleteCategory = async (req, res, next) => {
         }
         next(new CustomError(err.message, 500));
     }
+
 };
 
 

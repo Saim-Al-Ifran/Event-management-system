@@ -9,18 +9,22 @@ const eventSchema = new mongoose.Schema({
   description: {
     type: String,
     required: true,
+    trim: true,
   },
   date: {
     type: Date,
     required: true,
+    
   },
   location: {
     type: String,
     required: true,
+    trim: true,
   },
   capacity: {
     type: Number,
     required: true,
+    trim: true,
   },
   image: {
     type: String,
@@ -29,6 +33,11 @@ const eventSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Category',
     required: true,
+  },
+  price: {
+    type: Number,
+    required: true,
+    trim: true,
   },
 });
 
