@@ -23,12 +23,7 @@ const settingSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-  // paymentOptions: [{
-  //   gatewayName: {
-  //     type: String,
-  //   },
-  //   // Add other payment gateway configuration fields as needed
-  // }],
+ 
   currencyOptions: {
     type: String,
   },
