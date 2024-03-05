@@ -39,6 +39,16 @@ const eventSchema = new mongoose.Schema({
     required: true,
     trim: true,
   },
+  status:{
+    type:String,
+    enum:['pending','active','completed'],
+    default:'pending'
+  },
+  author:{
+     type:mongoose.Schema.Types.ObjectId,
+     ref:'User',
+     required:true
+  }
 });
 
 const Event = mongoose.model('Event', eventSchema);

@@ -44,11 +44,27 @@ const validateLogin = [
     .withMessage('Password is required')
     .isLength({ min: 6 })
     .withMessage('Password should be at least 6 characters long')
+  ]
 
-]
+const validateResetPassword = [
+     body('oldPassword')
+     .trim()
+     .notEmpty()
+     .withMessage('oldPassword field is required')
+     .isLength({ min: 6 })
+     .withMessage('Password should be at least 6 characters long'),
 
+     body('newPassword')
+     .trim()
+     .notEmpty()
+     .withMessage('newPassword field is required')
+     .isLength({ min: 6 })
+     .withMessage('Password should be at least 6 characters long')
+
+]  
 
 module.exports = {
     validateUserData,
-    validateLogin
+    validateLogin,
+    validateResetPassword
 }

@@ -1,12 +1,17 @@
 const mongoose = require('mongoose');
 
 const contactSchema = new mongoose.Schema({
-  name: {
+  title: {
     type: String,
     required: true,
     trim: true,
   },
   email: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  phoneNumber: {
     type: String,
     required: true,
     trim: true,
@@ -20,6 +25,11 @@ const contactSchema = new mongoose.Schema({
     enum: ['unread', 'in progress', 'resolved'],
     default: 'unread',
   },
+  author:{
+    type:mongoose.Schema.Types.ObjectId,
+    ref:'User',
+    required:true
+ },
   createdAt: {
     type: Date,
     default: Date.now,

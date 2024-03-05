@@ -28,8 +28,8 @@ router.put('/users/:userId', authenticate, authorizeAdmin,validateUserData , run
 router.post('/users', authenticate, authorizeAdmin,validateUserData , runValidation, adminCreateUser);
 router.delete('/users/:userId', authenticate, authorizeAdmin, adminDeleteUser);
 router.patch('/users/:userId/blockunblock',  authenticate , authorizeAdmin, adminBlockUnblockUser);
-router.get('/profile', authenticate, authorizeAdmin, getAdminProfile);
-router.put('/profile', authenticate, authorizeAdmin,validateUserData , runValidation, updateAdminProfile);
+router.get('/profile', authenticate, authorizeAdmin , getAdminProfile);
+router.put('/profile', authenticate, authorizeAdmin , validateUserData , runValidation, updateAdminProfile);
 router.put('/reset-password', authenticate, authorizeAdmin, resetAdminPassword); 
 router.patch('/upload-profile-image', authenticate , authorizeAdmin , upload.single('image') , updateAdminProfileImage);
 router.get('/upload-profile-image', authenticate ,  authorizeAdmin , getAdminProfileImage);  

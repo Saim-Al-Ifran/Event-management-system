@@ -6,20 +6,23 @@ const bookingSchema = new mongoose.Schema({
     ref: 'Event',
     required: true,
   },
-  userId: {
+  attendeId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true,
   },
-  status: {
-    type: String,
-    enum: ['active', 'pending', 'completed'],
-    default: 'pending',
+  requestToDelete: {
+    type: Boolean, 
+    default: false,
   },
-  totalPrice: {
+  ticketQuantity: {
     type: Number,
     required: true,
-  },
+},
+  // totalPrice: {
+  //   type: Number,
+  //   required: true,
+  // },
  
   createdAt: {
     type: Date,

@@ -113,9 +113,6 @@ const {uploadImageToCloudinary} = require("../../utils/imageUploadCloudinary");
                 }
 
            }  
-   
-  
- 
 
           const updateSuperAdminProfile = async (req, res, next) => {
             try {
@@ -370,23 +367,23 @@ const {uploadImageToCloudinary} = require("../../utils/imageUploadCloudinary");
         };
 
         const updateAdminProfileImage = async(req,res,next)=>{
-               try{
+            try{
 
-                      const result = await uploadImageToCloudinary(req.file);
-                      const admin = await User.findById(req.user.id);
+                    const result = await uploadImageToCloudinary(req.file);
+                    const admin = await User.findById(req.user.id);
 
-                      if(!admin){
-                          return next(new CustomError('Admin not found',404));
-                      }  
+                    if(!admin){
+                        return next(new CustomError('Admin not found',404));
+                    }  
 
-                      admin.image = result.secure_url;
-                      await admin.save();
+                    admin.image = result.secure_url;
+                    await admin.save();
 
-                      res.status(200).json({ message: 'Profile image updated successfully' })
+                    res.status(200).json({ message: 'Profile image updated successfully' })
 
-               }catch(err){
-                     next(new CustomError(err.message,500));
-               }
+            }catch(err){
+                    next(new CustomError(err.message,500));
+            }
 
         }
 
@@ -410,7 +407,85 @@ const {uploadImageToCloudinary} = require("../../utils/imageUploadCloudinary");
             }
         }
         
+
+        const getUserProfile = async(req,res,next)=>{
+            try {
+                const superAdminId = req.user.id;  
+                const superAdmin = await User.findById(superAdminId)
+                                              .select("-password");
+                if(!superAdmin){
+                    return next(new CustomError('User not found',404));
+                }
+                res.status(200).json({profile:superAdmin});
+            } catch (err) {
+                    next(new CustomError(err.message,500));  
+            }
+        }
+
+        const userProfileUpdate = async(req,res,next)=>{
+                 try{
+                         const userId = req.user.id;
+                         const{username,email,phoneNumber} = req.body;
+                         const user = await User.findById(userId)
+                                                 .select("-password");
+                         if(!user){
+                               return next(new CustomError('user not found',404));
+                         }
+                         user.username = username || user.username;
+                         user.email = email || user.email;
+                         user.phoneNumber = phoneNumber || user.phoneNumber;
+                         user.role = "user";
+
+                         await user.save();
+                         res.status(200).json({message:'Updated profile successfully',user:user})
+
+                 }catch(err){
+                       next(new CustomError(err.message,500));
+                 }
+        }
+
+
+         
+        const resetUserPassword = async(req,res,next)=>{
+
+            try {
+                await resetPassword(req,res,next,'user')
+            } catch (err) {
+                next(new CustomError(err.message,500));
+            }  
+      }
     
+      const getUserProfileImage = async (req, res, next) => {
+
+        try {
+            const user = await findUserAndCheckImage(req.user.id);
+            res.status(200).json({ imageUrl: user.image });
+
+        } catch (err) {
+            next(new CustomError(err.message, 500));
+        }
+    };
+
+    const updateUserProfileImage = async (req, res, next) => {
+        try {
+    
+            const result = await  uploadImageToCloudinary(req.file);
+    
+            // Find the existing super admin user and update the image field
+            const user = await User.findById(req.user.id);
+            if (!user) {
+                return res.status(404).json({ error: 'Super Admin not found' });
+            }
+    
+            user.image = result.secure_url;
+            await user.save();
+    
+            res.status(200).json({ message: 'Profile image updated successfully' });
+        } catch (err) {
+            
+            next(new CustomError(err.message, 500));
+        }
+    };
          
  
 
@@ -436,7 +511,12 @@ const {uploadImageToCloudinary} = require("../../utils/imageUploadCloudinary");
     updateSuperAdminProfileImage,
     updateAdminProfileImage,
     getSuperAdminProfileImage,
-    getAdminProfileImage
+    getAdminProfileImage,
+    getUserProfile,
+    userProfileUpdate,
+    resetUserPassword,
+    getUserProfileImage,
+    updateUserProfileImage
 
  }
 

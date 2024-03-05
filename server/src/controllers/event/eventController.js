@@ -1,26 +1,27 @@
 const CustomError = require("../../errors/CustomError");
 const Event = require("../../models/Event");
-const { deleteImageFromCloudinary } = require("../../utils/deleteImageFromCloudinary");
+const fetchEvents = require("../../services/event/fetchEvents");
+const updateEventDetails = require("../../services/event/updateEventDetails");
 const { uploadImageToCloudinary } = require("../../utils/imageUploadCloudinary");
+ 
+const deleteEventById = require("../../services/event/deleteEvent");
+
 
 const getEvents = async(_req,res,next)=>{
-       try{
-              const events = await Event.find({});
-              if(events.length === 0 ){
-                    return next(new CustomError('No events found!',404));
-              }
-              res.status(200).json({events:events});
-       }catch(err){
-              next(new CustomError(err.message,500));
-       }
+        await fetchEvents({},res,next);
+}
+const getUserEvents = async(req,res,next)=>{
+        const userId = req.user.id;
+        await fetchEvents({author:userId},res,next);
 }
 
 const createEvent = async (req, res, next) => {
     try {
       
         const { title, description, date, location, capacity, category,price } = req.body;
-
+         
         const cloudinaryResult = await uploadImageToCloudinary(req.file);
+        
         const newEvent = new Event({
             title,
             description,
@@ -29,8 +30,14 @@ const createEvent = async (req, res, next) => {
             capacity,
             image: cloudinaryResult.secure_url,
             category,
-            price
+            price,
+            status:'active',
+            author:req.user.id
         });
+
+        if(req.user.role === 'user'){
+              newEvent.status = 'pending';
+        }
 
  
         const savedEvent = await newEvent.save();
@@ -38,38 +45,41 @@ const createEvent = async (req, res, next) => {
         res.status(201).json({ message: 'Event created successfully', event: savedEvent });
     } catch (err) {
         next(new CustomError(err.message,500));
+ 
     }
 };
 
 const updateEvent = async (req, res, next) => {
     try {
         const { eventId } = req.params;
-        const { title, description, date, location, capacity, category, price } = req.body;
-        const image = req.file;
 
         const existingEvent = await Event.findById(eventId);
         if (!existingEvent) {
             return next(new CustomError('Event not found', 404));
         }
 
-        let updatedImageUrl = existingEvent.image;
-        if (image) {
-            const cloudinaryResult = await uploadImageToCloudinary(image);
-            updatedImageUrl = cloudinaryResult.secure_url;
+        await updateEventDetails(existingEvent, req ,res);
+
+    } catch (err) {
+        next(new CustomError(err.message, 500));
+    }
+};
+
+
+const updateUserEvent = async (req, res, next) => {
+    try {
+        const { eventId } = req.params;
+        const existingEvent = await Event.findById(eventId);
+        if (!existingEvent) {
+            return next(new CustomError('Event not found', 404));
         }
 
-        existingEvent.title = title || existingEvent.title;
-        existingEvent.description = description || existingEvent.description;
-        existingEvent.date = date || existingEvent.date;
-        existingEvent.location = location || existingEvent.location;
-        existingEvent.capacity = capacity || existingEvent.capacity;
-        existingEvent.category = category || existingEvent.category;
-        existingEvent.price = price || existingEvent.price;
-        existingEvent.image = updatedImageUrl;
+        if (existingEvent.author != req.user.id) {
+            return next(new CustomError('Unauthorized access', 403));
+        }
 
-        await existingEvent.save();
+        await updateEventDetails(existingEvent, req , res);
 
-        res.status(200).json({ message: 'Event updated successfully', event: existingEvent });
     } catch (err) {
         next(new CustomError(err.message, 500));
     }
@@ -77,29 +87,15 @@ const updateEvent = async (req, res, next) => {
 
 
 const deleteEvent = async (req, res, next) => {
-    try {
-        const { eventId } = req.params;
-
-        const existingEvent = await Event.findById(eventId);
-
-        if (!existingEvent) {
-            return next(new CustomError('Event not found', 404));
-        }
-
-        if (existingEvent.image) {
-            await deleteImageFromCloudinary(existingEvent.image);
-        }
-
-        await Event.deleteOne({ _id: existingEvent._id });
-
-        res.status(200).json({ message: 'Event deleted successfully' });
-    } catch (err) {
-        if (err.name === 'CastError') {
-            return next(new CustomError('Invalid event ID', 400));
-        }
-        next(new CustomError(err.message, 500));
-    }
+    const { eventId } = req.params;
+    await deleteEventById(eventId, null, res, next);
 };
+
+const userDeleteEvent = async (req, res, next) => {
+    const { eventId } = req.params;
+    await deleteEventById(eventId, req.user.id, res, next);
+};
+ 
 
 const duplicateEvent = async (req, res, next) => {
     try {
@@ -131,9 +127,6 @@ const duplicateEvent = async (req, res, next) => {
     }
 };
 
- 
-
-
 const sortEvents = async (req, res, next) => {
     try {
         
@@ -159,5 +152,8 @@ module.exports = {
     updateEvent,
     duplicateEvent,
     sortEvents,
-    deleteEvent
+    deleteEvent,
+    getUserEvents,
+    updateUserEvent,
+    userDeleteEvent
 };
