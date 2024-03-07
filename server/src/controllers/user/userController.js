@@ -80,18 +80,14 @@ const {uploadImageToCloudinary} = require("../../utils/imageUploadCloudinary");
            }
 
           const superAdminDelete = async (req, res, next) => {
-
                 const { entityId } = req.params;
                 try {
-                
                     const entity = await User.findById(entityId);
-            
                     if (!entity) {
                         return res.status(404).json({ error: 'Use not found' });
                     }
             
-                    await User.deleteOne({ _id: entityId });
-                    
+                    await User.deleteOne({ _id: entityId }); 
                     res.status(200).json({ message: 'User deleted successfully', deletedUser: entity });
 
                 } catch (err) {

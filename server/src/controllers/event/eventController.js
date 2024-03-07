@@ -144,6 +144,25 @@ const sortEvents = async (req, res, next) => {
     }
 };
 
+const approveEvent = async (req, res, next) => {
+    try {
+        const { eventId } = req.params;
+        const event = await Event.findById(eventId);
+
+        if (!event) {
+            return res.status(404).json({ message: 'Event not found' });
+        }
+        if(event.status === 'active'){
+            return next(new CustomError('This event is already activated',403));
+        }
+        event.status = 'active';
+        await event.save();
+
+        res.status(200).json({ message: 'Event approved successfully', event });
+    } catch (err) {
+        next(err);
+    }
+};
 
 
 module.exports = {
@@ -155,5 +174,6 @@ module.exports = {
     deleteEvent,
     getUserEvents,
     updateUserEvent,
-    userDeleteEvent
+    userDeleteEvent,
+    approveEvent
 };

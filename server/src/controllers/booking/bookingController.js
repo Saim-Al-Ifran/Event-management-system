@@ -40,6 +40,7 @@ const bookEvent = async (req, res, next) => {
                return next(new CustomError("This event hasn't been published",403));
         }
 
+
         if(ticketQuantity > 5){
             return next(new CustomError("cann't book more then 5 tickets"));
         }
@@ -52,6 +53,8 @@ const bookEvent = async (req, res, next) => {
         if(existingEvent){
                return next(new CustomError('You have already booked this event',403));
         }
+  
+         
 
         const booking = new Booking({
             eventId: eventId,
@@ -66,7 +69,7 @@ const bookEvent = async (req, res, next) => {
         res.status(201).json({ message: 'Event booked successfully', booking: booking });
 
     } catch (error) {
-        console.log(error.message);
+        
         next(new CustomError(error.message, 500));
     }
 
@@ -92,8 +95,39 @@ const requestBookingCancellation = async (req, res, next) => {
     }
 };
 
+
+const deleteBookings = async(req,res,next)=>{
+       try {
+             const {bookingId} = req.params;
+             const booking = await Booking.findById(bookingId);
+             
+             if(!booking){
+                  next(new CustomError('no booking data found!!',404));
+             }
+             if(booking.requestToDelete === true){
+                    const event = await Event.findById(booking.eventId);
+                    
+                    if (!event) {
+                        return next(new CustomError('Associated event not found', 404));
+                    }
+
+                    event.capacity += booking.ticketQuantity;
+                    await Booking.deleteOne({_id:bookingId});
+                    await event.save();
+
+                    res.status(200).json({message:'Booking data deleted succesfully'});
+
+             }else{
+                    next(new CustomError('Booking cannot be deleted',403))
+             }
+       }catch(err){
+              next(new CustomError(err.message,500));
+       }
+}
+
 module.exports = {
     getBookingsForUser, 
     bookEvent,
-    requestBookingCancellation
+    requestBookingCancellation,
+    deleteBookings
  };

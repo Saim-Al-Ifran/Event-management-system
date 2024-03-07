@@ -1,10 +1,12 @@
+const { deleteBookings } = require('../controllers/booking/bookingController');
 const {
      createEvent,
      updateEvent,
      duplicateEvent,
      sortEvents,
      getEvents,
-     deleteEvent
+     deleteEvent,
+     approveEvent
   } = require('../controllers/event/eventController');
   
 const { authenticate } = require('../middlewares/auth/authenticate');
@@ -21,6 +23,8 @@ router.put('/:eventId', authenticate , checkAdminOrSuperAdmin , upload.single('i
 router.delete('/:eventId', authenticate , checkAdminOrSuperAdmin , deleteEvent);
 router.post('/:eventId/duplicate' , authenticate ,checkAdminOrSuperAdmin , duplicateEvent);
 router.get('/sort', authenticate , checkAdminOrSuperAdmin ,sortEvents);
-
+router.patch('/approve/:eventId',authenticate,checkAdminOrSuperAdmin, approveEvent);
+router.delete('/bookings/:bookingId/delete-requested', authenticate, checkAdminOrSuperAdmin, deleteBookings)
+;
 
 module.exports = router;
